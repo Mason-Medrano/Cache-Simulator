@@ -52,18 +52,16 @@ std::string Cache::CacheRead(string binaryAddress, string hexAddressToPrint)
 	it = fullCache.at(setIndexNumeric).find(tagBits);
 
 	if (it == fullCache.at(setIndexNumeric).end()) {
+		cout << "hit:no" << endl;
+		
 		if (fullCache.at(setIndexNumeric).size() != E) {
-			cout << "hit:no" << endl;
-
 			readLine = RAM->ReadLine(memoryAddress, B);
+			
+			pair<string, CacheLine> currentLine(tagBits, CacheLine(readLine));
 
-			pair<string, CacheLine> currentLine;
-			currentLine = *it;
+			fullCache.at(setIndexNumeric).insert(currentLine);
 
-			currentLine.first = tagBits;
-			currentLine.second.SetData(readLine);
-
-			return currentLine.second.ReadFromCacheLine(b);
+			return fullCache.at(setIndexNumeric).at(tagBits).ReadFromCacheLine(blockOffsetNumeric);
 		}
 		else if (replacePolicy == 1 && fullCache.at(setIndexNumeric).size() == E) {
 			int maxIndex = (fullCache.at(setIndexNumeric).size() - 1);
@@ -79,7 +77,7 @@ std::string Cache::CacheRead(string binaryAddress, string hexAddressToPrint)
 			currentLine.first = tagBits;
 			currentLine.second.SetData(readLine);
 
-			return currentLine.second.ReadFromCacheLine(b);
+			return currentLine.second.ReadFromCacheLine(blockOffsetNumeric);
 		}
 	}
 	else {

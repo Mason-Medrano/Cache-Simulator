@@ -8,9 +8,14 @@ CacheLine::CacheLine()
 }
 
 CacheLine::CacheLine(int blockSize)
-	: validBit(1), data(blockSize)
+	: validBit(0), data(blockSize)
 {
 	
+}
+
+CacheLine::CacheLine(std::vector<std::string> dataToSet)
+{
+	SetData(dataToSet);
 }
 
 std::string CacheLine::ReadFromCacheLine(int blockOffset)
