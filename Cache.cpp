@@ -1,4 +1,7 @@
 #include <math.h>
+#include <iostream>
+#include <sstream>
+#include <stdlib.h> 
 #include "Cache.h"
 using namespace std;
 
@@ -20,4 +23,62 @@ Cache::Cache(int cacheSize, int blockSize, int linesPerSet, int replacePolicyInp
 	t = addressLength - (s + b);
 
 	fullCache.resize(S);
+}
+
+std::string Cache::CacheRead(string binaryAddress, string hexAddressToPrint)
+{
+	ostringstream temp;
+	string hexTag = "";
+	
+	string tagBits = binaryAddress.substr(0, t);
+	string setIndex = binaryAddress.substr((0 + t), s);
+	string blockOffSet = binaryAddress.substr((0 + t + s), b);
+
+	int setIndexNumeric = BinaryToDecimal(setIndex);
+	int blockOffsetNumeric = BinaryToDecimal(blockOffSet);
+	int tagBitsNumeric = BinaryToDecimal(tagBits);
+
+	temp << hex << tagBitsNumeric;
+	hexTag = temp.str();
+
+	cout << "set:" << setIndexNumeric << endl;
+	cout << "tag:" << hexTag << endl;
+
+
+	map<string, CacheLine>::iterator it;
+	it = fullCache.at(setIndexNumeric).find(tagBits);
+
+	if (it == fullCache.at(setIndexNumeric).end()) {
+		cout << "hit:no" << endl;
+
+		if (replacePolicy == 1) {
+			int maxIndex = (fullCache.at(setIndexNumeric).size() - 1);
+			int replacementIndex = rand() % maxIndex;
+			it = fullCache.at(setIndexNumeric).begin();
+			advance(it, replacementIndex);
+		}
+	}
+	else {
+		cout << "hit:yes" << endl;
+		cout << "eviction_line:-1" << endl;
+		it->second.ReadFromCacheLine(blockOffsetNumeric);
+	}
+}
+
+int Cache::BinaryToDecimal(std::string binaryNumber)
+{
+	int decimalNum = 0;
+	int multiplier = 0;
+	
+	for (int i = (binaryNumber.length() - 1); i >= 0 ; --i) {
+		if (binaryNumber.at(i) == '0') {
+			++multiplier;
+		}
+		else if (binaryNumber.at(i) == '1') {
+			decimalNum += (binaryNumber.at(i) * pow(10, multiplier));
+			++multiplier;
+		}
+	}
+
+	return decimalNum;
 }

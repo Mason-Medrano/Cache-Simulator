@@ -8,7 +8,8 @@ class CacheLine {
 public:
 	CacheLine();
 	CacheLine(int blockSize);
-
+	CacheLine(std::vector<std::string> inputLine);
+	std::string ReadFromCacheLine(int blockOffset);
 private:
 	int validBit;
 	std::vector<std::string> data;

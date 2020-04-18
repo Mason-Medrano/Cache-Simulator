@@ -25,6 +25,17 @@ std::string MainMemory::Read(int ramAddress)
 	return bytes.at(ramAddress);
 }
 
+std::vector<string> MainMemory::ReadLine(int ramAddress, int sizeOfLine)
+{
+	vector<string> fullLine;
+
+	for (int i = ramAddress; i < (ramAddress + sizeOfLine); ++i) {
+		fullLine.push_back(bytes.at(i));
+	}
+
+	return fullLine;
+}
+
 void MainMemory::Write(std::string data, int ramAddress)
 {
 	bytes.at(ramAddress) = data;

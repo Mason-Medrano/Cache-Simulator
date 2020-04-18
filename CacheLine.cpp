@@ -12,3 +12,13 @@ CacheLine::CacheLine(int blockSize)
 {
 	
 }
+
+CacheLine::CacheLine(std::vector<std::string> inputLine)
+{
+
+}
+
+std::string CacheLine::ReadFromCacheLine(int blockOffset)
+{
+	return data.at(blockOffset);
+}
