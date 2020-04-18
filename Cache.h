@@ -5,11 +5,12 @@
 #include <map>
 #include <string>
 #include "CacheLine.h"
+#include "MainMemory.h"
 
 class Cache {
 public:
 	Cache();
-	Cache(int cacheSize, int blockSize, int linesPerSet, int replacePolicyInput, int writeHPInput, int writeMPInput);
+	Cache(int cacheSize, int blockSize, int linesPerSet, int replacePolicyInput, int writeHPInput, int writeMPInput, MainMemory* ptrToRAM);
 	std::string CacheRead(std::string binaryAddress, std::string hexAddressToPrint);
 
 private:
@@ -24,6 +25,7 @@ private:
 	int writeHitPolicy;
 	int writeMissPolicy;
 	std::vector<std::map<std::string, CacheLine>> fullCache;
+	MainMemory* RAM;
 
 	int BinaryToDecimal(std::string binaryNumber);
 };
