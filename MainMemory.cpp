@@ -1,5 +1,6 @@
 #include <fstream>
 #include <iostream>
+#include <sstream>
 #include "MainMemory.h"
 using namespace std;
 
@@ -48,12 +49,44 @@ int MainMemory::GetMemorySize()
 
 void MainMemory::PrintMemoryContents()
 {
+	ostringstream outSS;
+	string convertedAddress = "";
+
 	for (int i = 0; i < bytes.size(); i += 8) {
-		cout << "0x" << hex << i << ":";
+		outSS << hex << i;
+		convertedAddress = outSS.str();
+		MakeStringUppercase(convertedAddress);
+		cout << "0x" << convertedAddress << ":";
 		for (int j = i; j < (i + 8); ++j) {
 			cout << bytes.at(j) << " ";
 		}
 		cout << dec << endl;
+		outSS.str("");
+	}
+}
+
+void MainMemory::MemoryDump()
+{
+	ofstream outFS;
+
+	outFS.open("ram.txt");
+
+	for (int i = 0; i < bytes.size(); ++i) {
+		if (i == (bytes.size() - 1)) {
+			outFS << bytes.at(i);
+		}
+		else {
+			outFS << bytes.at(i) << endl;
+		}
+	}
+
+	outFS.close();
+}
+
+void MainMemory::MakeStringUppercase(std::string& stringToChange)
+{
+	for (int i = 0; i < stringToChange.length(); ++i) {
+		stringToChange.at(i) = toupper(stringToChange.at(i));
 	}
 }
 

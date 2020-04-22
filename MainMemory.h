@@ -13,6 +13,8 @@ public:
 	void Write(std::string data, int ramAddress);
 	int GetMemorySize();
 	void PrintMemoryContents();
+	void MemoryDump();
+	void MakeStringUppercase(std::string& stringToChange);
 private:
 	std::vector<std::string> bytes;
 

@@ -2,7 +2,7 @@
 #define _CACHE_H_
 
 #include <vector>
-#include <map>
+#include <utility>
 #include <string>
 #include "CacheLine.h"
 #include "MainMemory.h"
@@ -12,6 +12,9 @@ public:
 	Cache();
 	Cache(int cacheSize, int blockSize, int linesPerSet, int replacePolicyInput, int writeHPInput, int writeMPInput, MainMemory* ptrToRAM);
 	std::string CacheRead(std::string binaryAddress, std::string hexAddressToPrint);
+	void CacheFlush();
+	void CacheDump();
+	void PrintCacheContents();
 
 private:
 	int C;
@@ -24,10 +27,14 @@ private:
 	int replacePolicy;
 	int writeHitPolicy;
 	int writeMissPolicy;
-	std::vector<std::map<std::string, CacheLine>> fullCache;
+	int cacheHits;
+	int cacheMisses;
+	std::vector<std::vector<std::pair<std::string, CacheLine>>> fullCache;
 	MainMemory* RAM;
 
 	int BinaryToDecimal(std::string binaryNumber);
+	std::string BinaryToHex(std::string binaryNumber);
+	void MakeStringUppercase(std::string& stringToChange);
 };
 #endif // !_CACHE_H_
 
