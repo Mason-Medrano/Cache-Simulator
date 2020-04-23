@@ -92,6 +92,7 @@ void MainMemory::MakeStringUppercase(std::string& stringToChange)
 
 void MainMemory::PopulateMemory(std::string memoryContentsFile)
 {
+	cout << "*** Welcome to the cache simulator ***" << endl;
 	cout << "initialize the RAM:" << endl;
 	cout << "init-ram 0x00 0xFF" << endl;
 	

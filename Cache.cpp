@@ -134,6 +134,7 @@ std::string Cache::CacheRead(string binaryAddress, string hexAddressToPrint)
 		set->at(lineFoundIndex).second.SetTimer();
 		return set->at(lineFoundIndex).second.ReadFromCacheLine(blockOffsetNumeric);
 	}
+	return "";
 }
 
 void Cache::CacheFlush()
