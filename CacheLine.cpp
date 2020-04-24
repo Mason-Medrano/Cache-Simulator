@@ -3,19 +3,19 @@
 using namespace std;
 
 CacheLine::CacheLine()
-	: validBit(0), dirtyBit(0), data(0)
+	: validBit(0), dirtyBit(0), data(0), sourceAddress(-1)
 {
 
 }
 
 CacheLine::CacheLine(int blockSize)
-	: validBit(0), dirtyBit(0), data(blockSize, "00")
+	: validBit(0), dirtyBit(0), data(blockSize, "00"), sourceAddress(-1)
 {
 	
 }
 
 CacheLine::CacheLine(std::vector<std::string> dataToSet)
-	: validBit(1), dirtyBit(0)
+	: validBit(1), dirtyBit(0), sourceAddress(0)
 {
 	SetData(dataToSet);
 }
@@ -23,6 +23,16 @@ CacheLine::CacheLine(std::vector<std::string> dataToSet)
 std::string CacheLine::ReadFromCacheLine(int blockOffset)
 {
 	return data.at(blockOffset);
+}
+
+void CacheLine::WriteToCacheLine(int blockOffset, string dataToWrite)
+{
+	data.at(blockOffset) = dataToWrite;
+}
+
+std::vector<std::string> CacheLine::GetCacheLine()
+{
+	return data;
 }
 
 void CacheLine::SetData(std::vector<std::string> dataToSet)
@@ -49,19 +59,24 @@ void CacheLine::AssertValidBit()
 	this->validBit = 1;
 }
 
-void CacheLine::FlipDirtyBit()
+void CacheLine::SetDirtyBit(int bit)
 {
-	if (dirtyBit == 0) {
-		dirtyBit = 1;
-	}
-	else if (dirtyBit == 1) {
-		dirtyBit = 0;
-	}
+	dirtyBit = bit;
 }
 
 void CacheLine::SetTimer()
 {
 	timeInCache = chrono::steady_clock::now();
+}
+
+void CacheLine::SetSourceAddress(int sourceAddressInput)
+{
+	sourceAddress = sourceAddressInput;
+}
+
+int CacheLine::GetSourceAddress()
+{
+	return sourceAddress;
 }
 
 int CacheLine::GetValidBit()

@@ -71,12 +71,14 @@ std::string Cache::CacheRead(string binaryAddress, string hexAddressToPrint)
 	if (!foundLine) {
 		setFull = (set->at(set->size() - 1).second.GetValidBit() == 1);
 		cout << "hit:no" << endl;
+		++cacheMisses;
 		
 		if (!setFull) {
 			readLine = RAM->ReadLine(memoryAddress, B);
 			
 			int indexToReturn = 0;
 			pair<string, CacheLine> currentLine(tagBits, CacheLine(readLine));
+			currentLine.second.SetSourceAddress(memoryAddress);
 
 			currentLine.second.SetTimer();
 
@@ -94,10 +96,12 @@ std::string Cache::CacheRead(string binaryAddress, string hexAddressToPrint)
 			srand(time(0));
 			int maxIndex = (set->size());
 			int replacementIndex = rand() % maxIndex;
+			cout << "eviction_line:" << replacementIndex << endl;
 
 			readLine = RAM->ReadLine(memoryAddress, B);
 
 			pair<string, CacheLine> currentLine(tagBits, CacheLine(readLine));
+			currentLine.second.SetSourceAddress(memoryAddress);
 
 			currentLine.second.SetTimer();
 
@@ -117,9 +121,12 @@ std::string Cache::CacheRead(string binaryAddress, string hexAddressToPrint)
 				}
 			}
 
+			cout << "eviction_line:" << leastIndex << endl;
+
 			readLine = RAM->ReadLine(memoryAddress, B);
 
 			pair<string, CacheLine> currentLine(tagBits, CacheLine(readLine));
+			currentLine.second.SetSourceAddress(memoryAddress);
 
 			currentLine.second.SetTimer();
 
@@ -131,8 +138,195 @@ std::string Cache::CacheRead(string binaryAddress, string hexAddressToPrint)
 	else {
 		cout << "hit:yes" << endl;
 		cout << "eviction_line:-1" << endl;
+		++cacheHits;
 		set->at(lineFoundIndex).second.SetTimer();
 		return set->at(lineFoundIndex).second.ReadFromCacheLine(blockOffsetNumeric);
+	}
+}
+
+void Cache::CacheWrite(string binaryAddress, string hexToStore, string hexAddressToPrint)
+{
+	ostringstream temp;
+	string hexTag = "";
+	vector<string> readLine;
+	bool foundLine = false;
+	bool setFull = false;
+	int lineFoundIndex = 0;
+	int dirtyBitToPrint = 0;
+
+	string tagBits = binaryAddress.substr(0, t);
+	string setIndex = binaryAddress.substr((0 + t), s);
+	string blockOffSet = binaryAddress.substr((0 + t + s), b);
+
+	int setIndexNumeric = BinaryToDecimal(setIndex);
+	int blockOffsetNumeric = BinaryToDecimal(blockOffSet);
+	int tagBitsNumeric = BinaryToDecimal(tagBits);
+	int memoryAddress = BinaryToDecimal(binaryAddress);
+
+	temp << hex << tagBitsNumeric;
+	hexTag = temp.str();
+
+	cout << "set:" << setIndexNumeric << endl;
+	cout << "tag:" << hexTag << endl;
+
+	std::vector<std::pair<string, CacheLine>>* set;
+	set = &(fullCache.at(setIndexNumeric));
+
+	for (int i = 0; i < set->size(); ++i) {
+		if (set->at(i).first == tagBits && set->at(i).second.GetValidBit() == 1) {
+			foundLine = true;
+			lineFoundIndex = i;
+			break;
+		}
+	}
+
+	if (!foundLine) {
+		setFull = (set->at(set->size() - 1).second.GetValidBit() == 1);
+		cout << "write_hit:no" << endl;
+		++cacheMisses;
+
+		if (!setFull) {
+			if (writeMissPolicy == 1) {
+				readLine = RAM->ReadLine(memoryAddress, B);
+				int indexToWrite = 0;
+				pair<string, CacheLine> currentLine(tagBits, CacheLine(readLine));
+				currentLine.second.SetSourceAddress(memoryAddress);
+
+				for (int i = 0; i < set->size(); ++i) {
+					if (set->at(i).second.GetValidBit() == 0) {
+						indexToWrite = i;
+						set->at(i) = currentLine;
+						break;
+					}
+				}
+
+				if (writeHitPolicy == 1) {
+					set->at(indexToWrite).second.WriteToCacheLine(blockOffsetNumeric, hexToStore);
+					set->at(indexToWrite).second.SetDirtyBit(0);
+					dirtyBitToPrint = 0;
+					set->at(indexToWrite).second.SetTimer();
+
+					RAM->Write(memoryAddress, hexToStore);
+				}
+				else if (writeHitPolicy == 2) {
+					set->at(indexToWrite).second.WriteToCacheLine(blockOffsetNumeric, hexToStore);
+					set->at(indexToWrite).second.SetDirtyBit(1);
+					dirtyBitToPrint = 1;
+					set->at(indexToWrite).second.SetTimer();
+				}
+			}
+			else if (writeMissPolicy == 2) {
+				RAM->Write(memoryAddress, hexToStore);
+				dirtyBitToPrint = 0;
+			}
+		}
+		else if (replacePolicy == 1 && setFull) {
+			srand(time(0));
+			int maxIndex = (set->size());
+			int replacementIndex = rand() % maxIndex;
+			cout << "eviction_line:" << replacementIndex << endl;
+
+			if (writeMissPolicy == 1) {
+				readLine = RAM->ReadLine(memoryAddress, B);
+				pair<string, CacheLine> currentLine(tagBits, CacheLine(readLine));
+				currentLine.second.SetSourceAddress(memoryAddress);
+				if (writeHitPolicy == 2) {
+					RAM->WriteLine(set->at(replacementIndex).second.GetSourceAddress(), B, set->at(replacementIndex).second.GetCacheLine());
+				}
+
+				set->at(replacementIndex) = currentLine;
+
+				if (writeHitPolicy == 1) {
+					set->at(replacementIndex).second.WriteToCacheLine(blockOffsetNumeric, hexToStore);
+					set->at(replacementIndex).second.SetDirtyBit(0);
+					dirtyBitToPrint = 0;
+					set->at(replacementIndex).second.SetTimer();
+
+					RAM->Write(memoryAddress, hexToStore);
+				}
+				else if (writeHitPolicy == 2) {
+					set->at(replacementIndex).second.WriteToCacheLine(blockOffsetNumeric, hexToStore);
+					set->at(replacementIndex).second.SetDirtyBit(1);
+					dirtyBitToPrint = 1;
+					set->at(replacementIndex).second.SetTimer();
+				}
+			}
+			else if (writeMissPolicy == 2) {
+				RAM->Write(memoryAddress, hexToStore);
+				dirtyBitToPrint = 0;
+			}
+		}
+		else if (replacePolicy == 2 && setFull) {
+			int leastIndex = -1;
+			std::chrono::steady_clock::time_point leastTime = set->at(0).second.GetTime();
+			leastIndex = 0;
+
+			for (int i = 1; i < set->size(); ++i) {
+				if (set->at(i).second.GetTime() < leastTime) {
+					leastTime = set->at(i).second.GetTime();
+					leastIndex = i;
+				}
+			}
+
+			cout << "eviction_line:" << leastIndex << endl;
+
+			if (writeMissPolicy == 1) {
+				readLine = RAM->ReadLine(memoryAddress, B);
+				pair<string, CacheLine> currentLine(tagBits, CacheLine(readLine));
+				currentLine.second.SetSourceAddress(memoryAddress);
+				if (writeHitPolicy == 2) {
+					RAM->WriteLine(set->at(leastIndex).second.GetSourceAddress(), B, set->at(leastIndex).second.GetCacheLine());
+				}
+				set->at(leastIndex) = currentLine;
+
+				if (writeHitPolicy == 1) {
+					set->at(leastIndex).second.WriteToCacheLine(blockOffsetNumeric, hexToStore);
+					set->at(leastIndex).second.SetDirtyBit(0);
+					dirtyBitToPrint = 0;
+					set->at(leastIndex).second.SetTimer();
+
+					RAM->Write(memoryAddress, hexToStore);
+				}
+				else if (writeHitPolicy == 2) {
+					set->at(leastIndex).second.WriteToCacheLine(blockOffsetNumeric, hexToStore);
+					set->at(leastIndex).second.SetDirtyBit(1);
+					dirtyBitToPrint = 1;
+					set->at(leastIndex).second.SetTimer();
+				}
+			}
+			else if (writeMissPolicy == 2) {
+				RAM->Write(memoryAddress, hexToStore);
+				dirtyBitToPrint = 0;
+			}
+		}
+
+		cout << "ram_address:" << hexAddressToPrint << endl;
+		cout << "data:0x" << hexToStore << endl;
+		cout << "dirty_bit:" << dirtyBitToPrint << endl;
+	}
+	else {
+		cout << "write_hit:yes" << endl;
+		cout << "eviction_line:-1" << endl;
+		cout << "ram_address:-1" << endl;
+		cout << "data:0x" << hexToStore << endl;
+		++cacheHits;
+
+		if (writeHitPolicy == 1) {
+			set->at(lineFoundIndex).second.WriteToCacheLine(blockOffsetNumeric, hexToStore);
+			set->at(lineFoundIndex).second.SetDirtyBit(0);
+			dirtyBitToPrint = 0;
+			set->at(lineFoundIndex).second.SetTimer();
+
+			RAM->Write(memoryAddress, hexToStore);
+		}
+		else if (writeHitPolicy == 2) {
+			set->at(lineFoundIndex).second.WriteToCacheLine(blockOffsetNumeric, hexToStore);
+			set->at(lineFoundIndex).second.SetDirtyBit(1);
+			dirtyBitToPrint = 1;
+			set->at(lineFoundIndex).second.SetTimer();
+		}
+
+		cout << "dirty_bit:" << dirtyBitToPrint << endl;
 	}
 }
 

@@ -10,7 +10,8 @@ public:
 	MainMemory(std::string inputFile);
 	std::string Read(int ramAddress);
 	std::vector<std::string> ReadLine(int ramAddress, int sizeOfLine);
-	void Write(std::string data, int ramAddress);
+	void WriteLine(int ramAddress, int sizeOfLine, std::vector<std::string> lineToWrite);
+	void Write(int ramAddress, std::string data);
 	int GetMemorySize();
 	void PrintMemoryContents();
 	void MemoryDump();

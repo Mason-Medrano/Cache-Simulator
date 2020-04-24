@@ -28,16 +28,55 @@ std::string MainMemory::Read(int ramAddress)
 
 std::vector<string> MainMemory::ReadLine(int ramAddress, int sizeOfLine)
 {
+	int addressOfLine = 0;
+
+	if (sizeOfLine < 8) {
+		addressOfLine = ramAddress;
+	}
+	else if (sizeOfLine == 8) {
+		int deduction = 0;
+		deduction = ramAddress % 8;
+
+		addressOfLine = ramAddress - deduction;
+	}
+	else {
+		addressOfLine = ramAddress;
+	}
+
 	vector<string> fullLine;
 
-	for (int i = ramAddress; i < (ramAddress + sizeOfLine); ++i) {
+	for (int i = addressOfLine; i < (addressOfLine + sizeOfLine); ++i) {
 		fullLine.push_back(bytes.at(i));
 	}
 
 	return fullLine;
 }
 
-void MainMemory::Write(std::string data, int ramAddress)
+void MainMemory::WriteLine(int ramAddress, int sizeOfLine, std::vector<std::string> lineToWrite)
+{
+	int addressOfLine = 0;
+	int writeIndex = 0;
+
+	if (sizeOfLine < 8) {
+		addressOfLine = ramAddress;
+	}
+	else if (sizeOfLine == 8) {
+		int deduction = 0;
+		deduction = ramAddress % 8;
+
+		addressOfLine = ramAddress - deduction;
+	}
+	else {
+		addressOfLine = ramAddress;
+	}
+
+	for (int i = addressOfLine; i < (addressOfLine + sizeOfLine); ++i) {
+		bytes.at(i) = lineToWrite.at(writeIndex);
+		++writeIndex;
+	}
+}
+
+void MainMemory::Write(int ramAddress, string data)
 {
 	bytes.at(ramAddress) = data;
 }

@@ -12,6 +12,7 @@ public:
 	Cache();
 	Cache(int cacheSize, int blockSize, int linesPerSet, int replacePolicyInput, int writeHPInput, int writeMPInput, MainMemory* ptrToRAM);
 	std::string CacheRead(std::string binaryAddress, std::string hexAddressToPrint);
+	void CacheWrite(std::string binaryAddress, std::string hexToStore, std::string hexAddressToPrint);
 	void CacheFlush();
 	void CacheDump();
 	void PrintCacheContents();
