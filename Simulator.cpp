@@ -13,7 +13,7 @@ Simulator::Simulator(MainMemory* inputRAM, Cache* inputCache){
 void Simulator::executeCommand(){
     string command = "";
 	while(command != "quit"){
-		cout << endl << "*** Cache simulator menu ***" << endl
+		cout << "*** Cache simulator menu ***" << endl
 		<< "type one command: " << endl 
 		<< "1. cache-read" << endl
 		<< "2. cache-write" << endl
@@ -32,6 +32,7 @@ void Simulator::executeCommand(){
 			//not implemented yet
 		}else if(command == "cache-flush"){
 			cache.CacheFlush();
+			cout << "cache_cleared" << endl;
 		}else if(command == "cache-view"){
 			cache.PrintCacheContents();
 		}else if(command == "memory-view"){

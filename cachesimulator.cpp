@@ -22,6 +22,7 @@ int main(int argc, char* argv[]) {
 	Cache.PrintCacheContents();
 
 	Cache.CacheDump();
-	return 0;
 	*/
+	return 0;
+	
 }
