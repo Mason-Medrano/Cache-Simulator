@@ -5,8 +5,9 @@
 using namespace std;
 
 int main(int argc, char* argv[]) {
-	//Simulator::PromptMenu();
 	
+	Simulator::PromptMenu();
+	/*
 	MainMemory RAM(argv[1]);
 	Cache Cache(32, 8, 2, 1, 2, 1, &RAM);
 
@@ -33,6 +34,6 @@ int main(int argc, char* argv[]) {
 	cout << endl << endl << endl;
 
 	RAM.PrintMemoryContents();
-
+*/
 	return 0;
 }

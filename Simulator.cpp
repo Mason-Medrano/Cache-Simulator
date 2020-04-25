@@ -1,13 +1,33 @@
 #include <iostream>
 #include<string>
+
 #include "MainMemory.h"
 #include "Cache.h"
 #include "Simulator.h"
 using namespace std;
 
+
+
+
 Simulator::Simulator(MainMemory* inputRAM, Cache* inputCache){
     RAM = *inputRAM;
 	cache = *inputCache;
+	HexToBinary["0"] = "0000";
+	HexToBinary["1"] = "0001";
+	HexToBinary["2"] = "0010";
+	HexToBinary["3"] = "0011";
+	HexToBinary["4"] = "0100";
+	HexToBinary["5"] = "0101";
+	HexToBinary["6"] = "0110";
+	HexToBinary["7"] = "0111";
+	HexToBinary["8"] = "1000";
+	HexToBinary["9"] = "1001";
+	HexToBinary["A"] = "1010";
+	HexToBinary["B"] = "1011";
+	HexToBinary["C"] = "1100";
+	HexToBinary["D"] = "1101";
+	HexToBinary["E"] = "1110";
+	HexToBinary["F"] = "1111";
 }
 
 void Simulator::executeCommand(){
@@ -27,7 +47,13 @@ void Simulator::executeCommand(){
 		cin >> command;
 
 		if(command == "cache-read"){
-
+			cin >> command;
+			command = command.substr(2, command.size() - 1);
+			string binary = "";
+			for(int i = 0; i < command.size(); i++){
+				binary = binary +  HexToBinary[command.substr(i,1)];
+			}
+			cache.CacheRead(binary, command);
 		}else if(command == "cache-write"){
 			//not implemented yet
 		}else if(command == "cache-flush"){
@@ -42,7 +68,7 @@ void Simulator::executeCommand(){
 		}else if(command == "memory-dump"){
 			RAM.MemoryDump();
 		}else if(command != "quit" ){
-			//invalid command
+			cout << "That is an invalid command. Please type a valid command" << endl;
 		}
 	}
 }
