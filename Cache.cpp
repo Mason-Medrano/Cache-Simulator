@@ -50,12 +50,16 @@ std::string Cache::CacheRead(string binaryAddress, string hexAddressToPrint)
 	int blockOffsetNumeric = BinaryToDecimal(blockOffSet);
 	int tagBitsNumeric = BinaryToDecimal(tagBits);
 	int memoryAddress = BinaryToDecimal(binaryAddress);
+	int adjustedMemAddress = ConvertToRAMAddress(binaryAddress);
 
 	temp << hex << tagBitsNumeric;
 	hexTag = temp.str();
+	for (int i = 0; i < hexTag.length(); ++i) {
+		hexTag.at(i) = toupper(hexTag.at(i));
+	}
 
 	cout << "set:" << setIndexNumeric << endl;
-	cout << "tag:" << hexTag << endl;
+	cout << "tag:" << setw(2) << setfill('0') << hexTag << endl;
 
 	std::vector<std::pair<string, CacheLine>>* set;
 	set = &(fullCache.at(setIndexNumeric));
@@ -74,11 +78,11 @@ std::string Cache::CacheRead(string binaryAddress, string hexAddressToPrint)
 		++cacheMisses;
 		
 		if (!setFull) {
-			readLine = RAM->ReadLine(memoryAddress, B);
+			readLine = RAM->ReadLine(adjustedMemAddress, B);
 			
 			int indexToReturn = 0;
 			pair<string, CacheLine> currentLine(tagBits, CacheLine(readLine));
-			currentLine.second.SetSourceAddress(memoryAddress);
+			currentLine.second.SetSourceAddress(adjustedMemAddress);
 
 			currentLine.second.SetTimer();
 
@@ -98,10 +102,10 @@ std::string Cache::CacheRead(string binaryAddress, string hexAddressToPrint)
 			int replacementIndex = rand() % maxIndex;
 			cout << "eviction_line:" << replacementIndex << endl;
 
-			readLine = RAM->ReadLine(memoryAddress, B);
+			readLine = RAM->ReadLine(adjustedMemAddress, B);
 
 			pair<string, CacheLine> currentLine(tagBits, CacheLine(readLine));
-			currentLine.second.SetSourceAddress(memoryAddress);
+			currentLine.second.SetSourceAddress(adjustedMemAddress);
 
 			currentLine.second.SetTimer();
 
@@ -123,10 +127,10 @@ std::string Cache::CacheRead(string binaryAddress, string hexAddressToPrint)
 
 			cout << "eviction_line:" << leastIndex << endl;
 
-			readLine = RAM->ReadLine(memoryAddress, B);
+			readLine = RAM->ReadLine(adjustedMemAddress, B);
 
 			pair<string, CacheLine> currentLine(tagBits, CacheLine(readLine));
-			currentLine.second.SetSourceAddress(memoryAddress);
+			currentLine.second.SetSourceAddress(adjustedMemAddress);
 
 			currentLine.second.SetTimer();
 
@@ -162,12 +166,16 @@ void Cache::CacheWrite(string binaryAddress, string hexToStore, string hexAddres
 	int blockOffsetNumeric = BinaryToDecimal(blockOffSet);
 	int tagBitsNumeric = BinaryToDecimal(tagBits);
 	int memoryAddress = BinaryToDecimal(binaryAddress);
+	int adjustedMemAddress = ConvertToRAMAddress(binaryAddress);
 
 	temp << hex << tagBitsNumeric;
 	hexTag = temp.str();
+	for (int i = 0; i < hexTag.length(); ++i) {
+		hexTag.at(i) = toupper(hexTag.at(i));
+	}
 
 	cout << "set:" << setIndexNumeric << endl;
-	cout << "tag:" << hexTag << endl;
+	cout << "tag:" << setw(2) << setfill ('0') << hexTag << endl;
 
 	std::vector<std::pair<string, CacheLine>>* set;
 	set = &(fullCache.at(setIndexNumeric));
@@ -187,10 +195,10 @@ void Cache::CacheWrite(string binaryAddress, string hexToStore, string hexAddres
 
 		if (!setFull) {
 			if (writeMissPolicy == 1) {
-				readLine = RAM->ReadLine(memoryAddress, B);
+				readLine = RAM->ReadLine(adjustedMemAddress, B);
 				int indexToWrite = 0;
 				pair<string, CacheLine> currentLine(tagBits, CacheLine(readLine));
-				currentLine.second.SetSourceAddress(memoryAddress);
+				currentLine.second.SetSourceAddress(adjustedMemAddress);
 
 				for (int i = 0; i < set->size(); ++i) {
 					if (set->at(i).second.GetValidBit() == 0) {
@@ -227,9 +235,9 @@ void Cache::CacheWrite(string binaryAddress, string hexToStore, string hexAddres
 			cout << "eviction_line:" << replacementIndex << endl;
 
 			if (writeMissPolicy == 1) {
-				readLine = RAM->ReadLine(memoryAddress, B);
+				readLine = RAM->ReadLine(adjustedMemAddress, B);
 				pair<string, CacheLine> currentLine(tagBits, CacheLine(readLine));
-				currentLine.second.SetSourceAddress(memoryAddress);
+				currentLine.second.SetSourceAddress(adjustedMemAddress);
 				if (writeHitPolicy == 2) {
 					RAM->WriteLine(set->at(replacementIndex).second.GetSourceAddress(), B, set->at(replacementIndex).second.GetCacheLine());
 				}
@@ -271,9 +279,9 @@ void Cache::CacheWrite(string binaryAddress, string hexToStore, string hexAddres
 			cout << "eviction_line:" << leastIndex << endl;
 
 			if (writeMissPolicy == 1) {
-				readLine = RAM->ReadLine(memoryAddress, B);
+				readLine = RAM->ReadLine(adjustedMemAddress, B);
 				pair<string, CacheLine> currentLine(tagBits, CacheLine(readLine));
-				currentLine.second.SetSourceAddress(memoryAddress);
+				currentLine.second.SetSourceAddress(adjustedMemAddress);
 				if (writeHitPolicy == 2) {
 					RAM->WriteLine(set->at(leastIndex).second.GetSourceAddress(), B, set->at(leastIndex).second.GetCacheLine());
 				}
@@ -333,6 +341,11 @@ void Cache::CacheWrite(string binaryAddress, string hexToStore, string hexAddres
 void Cache::CacheFlush()
 {
 	for (int i = 0; i < fullCache.size(); ++i) {
+		for (int j = 0; j < fullCache.at(i).size(); ++j) {
+			if (fullCache.at(i).at(j).second.GetDirtyBit() == 1) {
+				RAM->WriteLine(fullCache.at(i).at(j).second.GetSourceAddress(), B, fullCache.at(i).at(j).second.GetCacheLine());
+			}
+		}
 		fullCache.at(i) = vector<pair<string, CacheLine>>(E, pair<string, CacheLine>("", (B)));
 	}
 }
@@ -438,4 +451,20 @@ void Cache::MakeStringUppercase(std::string& stringToChange)
 	for (int i = 0; i < stringToChange.length(); ++i) {
 		stringToChange.at(i) = toupper(stringToChange.at(i));
 	}
+}
+
+int Cache::ConvertToRAMAddress(std::string addressString)
+{
+	int offset = 0;
+	offset = b;
+
+	for (int i = addressString.length() - 1; i >= 0 && offset > 0; --i) {
+		addressString.at(i) = '0';
+		--offset;
+	}
+
+	int ramAddress = 0;
+	ramAddress = BinaryToDecimal(addressString);
+
+	return ramAddress;
 }

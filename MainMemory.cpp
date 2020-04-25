@@ -28,24 +28,9 @@ std::string MainMemory::Read(int ramAddress)
 
 std::vector<string> MainMemory::ReadLine(int ramAddress, int sizeOfLine)
 {
-	int addressOfLine = 0;
-
-	if (sizeOfLine < 8) {
-		addressOfLine = ramAddress;
-	}
-	else if (sizeOfLine == 8) {
-		int deduction = 0;
-		deduction = ramAddress % 8;
-
-		addressOfLine = ramAddress - deduction;
-	}
-	else {
-		addressOfLine = ramAddress;
-	}
-
 	vector<string> fullLine;
 
-	for (int i = addressOfLine; i < (addressOfLine + sizeOfLine); ++i) {
+	for (int i = ramAddress; i < (ramAddress + sizeOfLine); ++i) {
 		fullLine.push_back(bytes.at(i));
 	}
 
@@ -54,23 +39,9 @@ std::vector<string> MainMemory::ReadLine(int ramAddress, int sizeOfLine)
 
 void MainMemory::WriteLine(int ramAddress, int sizeOfLine, std::vector<std::string> lineToWrite)
 {
-	int addressOfLine = 0;
 	int writeIndex = 0;
 
-	if (sizeOfLine < 8) {
-		addressOfLine = ramAddress;
-	}
-	else if (sizeOfLine == 8) {
-		int deduction = 0;
-		deduction = ramAddress % 8;
-
-		addressOfLine = ramAddress - deduction;
-	}
-	else {
-		addressOfLine = ramAddress;
-	}
-
-	for (int i = addressOfLine; i < (addressOfLine + sizeOfLine); ++i) {
+	for (int i = ramAddress; i < (ramAddress + sizeOfLine); ++i) {
 		bytes.at(i) = lineToWrite.at(writeIndex);
 		++writeIndex;
 	}
@@ -151,4 +122,6 @@ void MainMemory::PopulateMemory(std::string memoryContentsFile)
 	}
 
 	cout << "ram successfully initialized!" << endl;
+
+	inFS.close();
 }

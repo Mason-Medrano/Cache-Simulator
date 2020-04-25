@@ -36,6 +36,7 @@ private:
 	int BinaryToDecimal(std::string binaryNumber);
 	std::string BinaryToHex(std::string binaryNumber);
 	void MakeStringUppercase(std::string& stringToChange);
+	int ConvertToRAMAddress(std::string addressString);
 };
 #endif // !_CACHE_H_
 
