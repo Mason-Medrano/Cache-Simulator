@@ -8,9 +8,9 @@ int main(int argc, char* argv[]) {
 	//Simulator::PromptMenu();
 	
 	MainMemory RAM(argv[1]);
-	Cache Cache(32, 8, 2, 1, 2, 1, &RAM);
+	Cache Cache(32, 4, 2, 1, 2, 1, &RAM);
 
-	Cache.CacheWrite("00000000", "AB", "0x0");
+	Cache.CacheWrite("00000011", "AB", "0x3");
 
 	cout << endl << endl << endl;
 
@@ -18,7 +18,7 @@ int main(int argc, char* argv[]) {
 
 	cout << endl << endl << endl;
 
-	Cache.CacheWrite("00010001", "5555", "0x11");
+	Cache.CacheWrite("11111111", "5555", "0x11");
 
 	cout << endl << endl << endl;
 
@@ -26,7 +26,9 @@ int main(int argc, char* argv[]) {
 
 	cout << endl << endl << endl;
 
-	Cache.CacheWrite("00100000", "$$#", "0x20");
+	//Cache.CacheFlush();
+
+	//Cache.CacheWrite("00100000", "$$#", "0x20");
 
 	Cache.PrintCacheContents();
 
