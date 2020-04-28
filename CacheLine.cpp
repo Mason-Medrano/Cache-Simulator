@@ -114,7 +114,10 @@ void CacheLine::PrintCacheLineToFile(ofstream& ofs)
 	// and print that data to the file
 	// specified in the function's argument.
 	for (int i = 0; i < data.size(); ++i) {
-		ofs << data.at(i) << " ";
+		ofs << data.at(i);
+		if (i != (data.size() - 1)) {
+			ofs << " ";
+		}
 	}
 }
 

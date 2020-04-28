@@ -206,6 +206,7 @@ std::string Cache::CacheRead(string binaryAddress, string hexAddressToPrint)
 			}
 
 			cout << "eviction_line:" << indexToReturn << endl;
+			cout << "ram_address:0x" << hexAddressToPrint << endl;
 
 			// Return the byte from the new cache line
 			// specified by our block offset index.
@@ -221,6 +222,7 @@ std::string Cache::CacheRead(string binaryAddress, string hexAddressToPrint)
 			// Generate a random index between 0 and (maxIndex - 1).
 			int replacementIndex = rand() % maxIndex;
 			cout << "eviction_line:" << replacementIndex << endl;
+			cout << "ram_address:0x" << hexAddressToPrint << endl;
 
 			// Read the line from RAM which contains
 			// the byte of data we are attempting to read.
@@ -277,6 +279,7 @@ std::string Cache::CacheRead(string binaryAddress, string hexAddressToPrint)
 			// The line we are evicting is the cache
 			// line used the furthest in the past.
 			cout << "eviction_line:" << leastIndex << endl;
+			cout << "ram_address:0x" << hexAddressToPrint << endl;
 
 			// Read the data from RAM that we will be
 			// putting into the cache.
@@ -311,6 +314,7 @@ std::string Cache::CacheRead(string binaryAddress, string hexAddressToPrint)
 		// no eviction line.
 		cout << "hit:yes" << endl;
 		cout << "eviction_line:-1" << endl;
+		cout << "ram_address:-1" << endl;
 		// Increment the number of cache
 		// hits.
 		++cacheHits;
@@ -575,7 +579,13 @@ void Cache::CacheDump()
 		set = &(fullCache.at(i));
 		for (int j = 0; j < set->size(); ++j) {
 			set->at(j).second.PrintCacheLineToFile(outFS);
-			outFS << endl;
+			if (j == (set->size() - 1) && i == (fullCache.size() - 1)) 
+			{
+				// Don't print a space.
+			}
+			else {
+				outFS << endl;
+			}
 		}
 	}
 
