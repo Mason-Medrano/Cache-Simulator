@@ -71,7 +71,9 @@ void Simulator::executeCommand(){
 				binary = binary +  HexToBinary[command.substr(i,1)];
 			}
 			//executes cache-read
-			cache.CacheRead(binary, command);
+			string data = cache.CacheRead(binary, command);
+			cout << "data:0x" << data << endl;
+
 		}else if(command == "cache-write"){
 			string address = "";
 			cin >> address;
@@ -88,7 +90,6 @@ void Simulator::executeCommand(){
 		}else if(command == "cache-flush"){
 			//executes cache-flush
 			cache.CacheFlush();
-			cout << "cache_cleared" << endl;
 		}else if(command == "cache-view"){
 			//executes cache-view
 			cache.PrintCacheContents();
@@ -117,6 +118,7 @@ void Simulator::executeCommand(){
       cache.*/
 void Simulator::PromptMenu(){
 	//constructs RAM with input file
+	cout << "*** Welcome to the cache simulator ***" << endl;
     MainMemory RAM("input.txt");
     MainMemory* memory = &RAM;
 
