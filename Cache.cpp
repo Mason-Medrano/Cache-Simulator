@@ -491,7 +491,7 @@ void Cache::CacheWrite(string binaryAddress, string hexToStore, string hexAddres
 			}
 		}
 
-		cout << "ram_address:" << hexAddressToPrint << endl;
+		cout << "ram_address:0x" << hexAddressToPrint << endl;
 		cout << "data:0x" << hexToStore << endl;
 		cout << "dirty_bit:" << dirtyBitToPrint << endl;
 	}
