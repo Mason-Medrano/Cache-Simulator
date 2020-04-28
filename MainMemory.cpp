@@ -26,7 +26,9 @@ using namespace std;
 MainMemory::MainMemory()
 	: bytes(256)
 {
-
+	for (int i = 0; i < bytes.size(); ++i) {
+		bytes.at(i) = "00";
+	}
 }
 
 // The custom constructor for the
@@ -37,6 +39,10 @@ MainMemory::MainMemory()
 MainMemory::MainMemory(std::string inputFile)
 	: bytes(256)
 {
+	for (int i = 0; i < bytes.size(); ++i) {
+		bytes.at(i) = "00";
+	}
+	
 	// Will attempt to populate the
 	// Main Memory with the contents
 	// of the specified input file, and
@@ -211,46 +217,93 @@ void MainMemory::PopulateMemory(std::string memoryContentsFile)
 	int memoryIndex = 0;
 	bool errorFlag = false;
 	
-	// Open the file to read the contents
-	// of memory from.
-	inFS.open(memoryContentsFile);
+	try {
+		// Open the file to read the contents
+		// of memory from.
+		inFS.open(memoryContentsFile);
 
-	// Throw an exception in the event that the specified
-	// file could not be opened.
-	if (!inFS.is_open()) {
-		throw invalid_argument("Invalid Argument: The specified input file cannot be opened.");
+		// Throw an exception in the event that the specified
+		// file could not be opened.
+		if (!inFS.is_open()) {
+			throw invalid_argument("Invalid Argument: The specified input file cannot be opened.");
+		}
+	}
+	catch (invalid_argument & invalidArgExcpt) {
+		cerr << invalidArgExcpt.what() << endl;
+		errorFlag = true;
 	}
 
-	// Continue to read data from the input
-	// file into Main Memory.
-	while (!inFS.eof()) {
+	if (inFS.is_open()) {
+		// Continue to read data from the input
+		// file into Main Memory.
+		while (!inFS.eof()) {
 
-		try {
-			if (memoryIndex == bytes.size()) {
-				throw runtime_error("Error: Data file is too large. RAM can only contain 256 bytes of data (0x00 - 0xFF).");
+			// Get the next line in the file.
+			getline(inFS, hexData);
+			
+			// Ignore whitespace.
+			if (hexData == "") {
+				continue;
 			}
+
+			try {
+				if (hexData.length() > 2) {
+					throw runtime_error("Error: Input in input file is not valid hexadecimal RAM data. Please check your input file.");
+				}
+
+				string tempHex = "";
+
+				for (int i = 0; i < hexData.length(); ++i) {
+					tempHex = tolower(hexData.at(i));
+				}
+
+				for (int j = 0; j < tempHex.length(); ++j) {
+					if (!(isalpha(tempHex.at(j)) || isdigit(tempHex.at(j))) || tempHex.at(j) > 'f') {
+						throw invalid_argument("Invalid hexadecimal data: 0x" + hexData);
+					}
+				}
+			}
+			catch (invalid_argument & invalidArgExcpt) {
+				cerr << invalidArgExcpt.what() << endl;
+				errorFlag = true;
+			}
+			
+			// Make sure that the input file does
+			// not contain more data than the RAM
+			// is meant to hold.
+			try {
+				if (memoryIndex == bytes.size()) {
+					throw runtime_error("Error: Data file is too large. RAM can only contain 256 bytes of data (0x00 - 0xFF).");
+				}
+			}
+			// Throw an exception if the input
+			// file is too large; will still use
+			// the data populated up to this point.
+			catch (runtime_error & rtError) {
+				cerr << rtError.what() << endl;
+				errorFlag = true;
+				break;
+			}
+			
+			// Write that data into Main Memory.
+			bytes.at(memoryIndex) = hexData;
+			// Increment the index to store data at.
+			++memoryIndex;
 		}
-		catch (runtime_error & rtError) {
-			cerr << rtError.what() << endl;
+
+		if (memoryIndex == 0) {
+			cerr << "Error: Input file was empty and therefore RAM contains no data." << endl;
 			errorFlag = true;
-			break;
 		}
-		// Get the next line in the file.
-		getline(inFS, hexData);
-
-		if (hexData == "") {
-			continue;
-		}
-
-		// Write that data into Main Memory.
-		bytes.at(memoryIndex) = hexData;
-		// Increment the index to store data at.
-		++memoryIndex;
 	}
 
 	// Ending statements.
 	if (errorFlag) {
 		cout << "ram initialization failed!" << endl;
+		if (inFS.is_open()) {
+			inFS.close();
+		}
+		exit(1);
 	}
 	else {
 		cout << "ram successfully initialized!" << endl;

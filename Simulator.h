@@ -20,11 +20,12 @@ public:
       RAM and Cache objects. Also initializes map for
       hexadecimal to binary.*/
     Simulator(MainMemory* inputRAM, Cache* inputCache);
+    ~Simulator();
 
     /*Primary function which starts the program in main.
       Displays initial menus and allows user to configure
       cache.*/
-    static void PromptMenu();
+    static void PromptMenu(std::string inputFile);
 
 private:
 

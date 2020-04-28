@@ -34,6 +34,19 @@ Simulator::Simulator(MainMemory* inputRAM, Cache* inputCache) {
 	HexToBinary["F"] = "1111";
 }
 
+Simulator::~Simulator()
+{
+	if (RAM != NULL) {
+		delete RAM;
+	}
+	if (cache != NULL) {
+		delete cache;
+	}
+
+	RAM = NULL;
+	cache = NULL;
+}
+
 /*Helper function which allows user to select commands.
   The function then executes given command, and returns
   to while loop.*/
@@ -62,7 +75,27 @@ void Simulator::executeCommand() {
 			//Determines function to run based on user input
 			if (command == "cache-read") {
 				cin >> address;
+				if (address.at(0) != '0' || (address.at(1) != 'x' && address.at(1) != 'X')) {
+					throw invalid_argument("Invalid hexadecimal address: " + address);
+				}
+
 				address = address.substr(2, address.size() - 1);
+
+				if (address.length() > 2) {
+					throw invalid_argument("Invalid hexadecimal address: 0x" + address);
+				}
+				
+				string tempAddress = "";
+				for (int i = 0; i < address.length(); ++i) {
+					tempAddress = tolower(address.at(i));
+				}
+
+				for (int i = 0; i < tempAddress.length(); ++i) {
+					if (!(isalpha(tempAddress.at(i)) || isdigit(tempAddress.at(i))) || tempAddress.at(i) > 'f') {
+						throw invalid_argument("Invalid hexadecimal address: 0x" + address);
+					}
+				}
+
 				string binary = "";
 				for (int i = 0; i < address.size(); i++) {
 					//uses hextobinary map to convert from hex to binary
@@ -74,8 +107,49 @@ void Simulator::executeCommand() {
 			}
 			else if (command == "cache-write") {
 				cin >> address >> data;
+
+				if (address.at(0) != '0' || (address.at(1) != 'x' && address.at(1) != 'X')) {
+					throw invalid_argument("Invalid hexadecimal address: " + address);
+				}
+
+				if (data.at(0) != '0' || (data.at(1) != 'x' && data.at(1) != 'X')) {
+					throw invalid_argument("Invalid hexadecimal data: " + data);
+				}
+
 				address = address.substr(2, address.size() - 1);
+
+				if (address.length() > 2) {
+					throw invalid_argument("Invalid hexadecimal address: 0x" + address);
+				}
+
+				string tempAddress = "";
+				for (int i = 0; i < address.length(); ++i) {
+					tempAddress = tolower(address.at(i));
+				}
+
+				for (int i = 0; i < tempAddress.length(); ++i) {
+					if (!(isalpha(tempAddress.at(i)) || isdigit(tempAddress.at(i))) || tempAddress.at(i) > 'f') {
+						throw invalid_argument("Invalid hexadecimal data: 0x" + data);
+					}
+				}
+
 				data = data.substr(2, data.size() - 1);
+
+				if (data.length() > 2) {
+					throw invalid_argument("Invalid hexadecimal data [Data is too large]: 0x" + data);
+				}
+
+				string tempData = "";
+				for (int i = 0; i < data.length(); ++i) {
+					tempData = tolower(data.at(i));
+				}
+
+				for (int i = 0; i < tempData.length(); ++i) {
+					if (!(isalpha(tempData.at(i)) || isdigit(tempData.at(i))) || tempData.at(i) > 'f') {
+						throw invalid_argument("Invalid hexadecimal data: 0x" + data);
+					}
+				}
+
 				string binary = "";
 				for (int i = 0; i < address.size(); i++) {
 					//uses hextobinary map to convert from hex to binary
@@ -120,10 +194,10 @@ void Simulator::executeCommand() {
 /*Primary function which starts the program in main.
 	  Displays initial menus and allows user to configure
 	  cache.*/
-void Simulator::PromptMenu() {
+void Simulator::PromptMenu(string inputFile) {
 	//constructs RAM with input file
 	cout << "*** Welcome to the cache simulator ***" << endl;
-	MainMemory RAM("input.txt");
+	MainMemory RAM(inputFile);
 	MainMemory* memory = &RAM;
 
 	//initializes variables for user input
@@ -157,6 +231,12 @@ void Simulator::PromptMenu() {
 			std::cout << "Invalid input.";
 			exit(1);
 		}
+		else if (data_block < 1 || data_block > cache_size) {
+			throw std::invalid_argument("Block size must be between 1 - " + to_string(cache_size) + " (total size of the cache) Bytes.");
+		} 
+		else if (cache_size % data_block != 0) {
+			throw std::invalid_argument("Total cache size must be divisible by data block size; improper configuration of cache.");
+		}
 
 		cout << "associativity: ";
 		cin >> assoc;
@@ -168,6 +248,10 @@ void Simulator::PromptMenu() {
 		}
 		else if (assoc != 1 && assoc != 2 && assoc != 4) {
 			throw std::invalid_argument("Associativity must be 1, 2, or 4.");
+		}
+
+		if ((data_block * assoc) > cache_size) {
+			throw std::invalid_argument("Improper configuration of cache, block size or number of cache lines is too high for the specified cache size.");
 		}
 
 		cout << "replacement policy: ";
