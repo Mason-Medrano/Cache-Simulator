@@ -1,9 +1,11 @@
 #include <iostream>
-#include<string>
-
+#include <string>
+#include <stdexcept>
 #include "MainMemory.h"
 #include "Cache.h"
 #include "Simulator.h"
+
+using std::cout;
 using namespace std;
 
 
@@ -54,10 +56,10 @@ void Simulator::executeCommand(){
 		<< "6. cache-dump" << endl
 		<< "7. memory-dump" << endl
 		<< "8. quit" << endl
-		<< "*******************" << endl;
+		<< "****************************" << endl;
 		cin >> command;
-
-		//Determines function to run based on user input
+		try{
+			//Determines function to run based on user input
 		if(command == "cache-read"){
 
 			//parses hexadecimal address to be used in cache read
@@ -71,7 +73,18 @@ void Simulator::executeCommand(){
 			//executes cache-read
 			cache.CacheRead(binary, command);
 		}else if(command == "cache-write"){
-			//not implemented yet
+			string address = "";
+			cin >> address;
+			string data = "";
+			cin >> data;
+			data = data.substr(2, data.size() - 1);
+			string binary = "";
+			for(int i = 0; i < address.size(); i++){
+				//uses hextobinary map to convert from hex to binary
+				binary = binary +  HexToBinary[address.substr(i,1)];
+			}
+			//executes cache-write
+			cache.CacheWrite(binary, data, address);
 		}else if(command == "cache-flush"){
 			//executes cache-flush
 			cache.CacheFlush();
@@ -88,14 +101,17 @@ void Simulator::executeCommand(){
 		}else if(command == "memory-dump"){
 			//executes memory-dump
 			RAM.MemoryDump();
-		}else if(command != "quit" ){
-			//ensures the input string is valid. If invalid,
-			//loop restarts.
-			cout << "That is an invalid command. Please type a valid command" << endl;
+		}else if(command == "quit" ){
+			exit(0);
+		}else{
+			throw std::invalid_argument("Must select a simulator command.");
+		}
+		}catch(std::invalid_argument& invalid){
+			cerr << invalid.what();
+			exit(1);
 		}
 	}
 }
-
 /*Primary function which starts the program in main.
       Displays initial menus and allows user to configure
       cache.*/
@@ -113,19 +129,74 @@ void Simulator::PromptMenu(){
     int write_miss = 0;
 
 	//gathers user input
-    cout << endl << "configure the cache: " << endl;
-    cout << "cache size: ";
-    cin >> cache_size;
-    cout << "data block size: ";
-    cin >> data_block;
-    cout << "associativity: ";
-    cin >> assoc;
-    cout << "replacement policy: ";
-    cin >> replacement;
-    cout << "write hit policy: ";
-    cin >> write_hit;
-    cout << "write miss policy: ";
-    cin >> write_miss;
+	try{
+		cout << "configure the cache: " << endl;
+    	cout << "cache size: ";
+    	cin >> cache_size;
+		if(std::cin.fail()) {
+    		std::cin.clear();
+    		std::cin.ignore(numeric_limits<streamsize>::max(),'\n');
+    		std::cout << "Invalid input.";
+    		exit(1);
+		}
+
+    	cout << "data block size: ";
+    	cin >> data_block;
+		if(std::cin.fail()) {
+    		std::cin.clear();
+    		std::cin.ignore(numeric_limits<streamsize>::max(),'\n');
+    		std::cout << "Invalid input.";
+    		exit(1);
+		}
+
+    	cout << "associativity: ";
+    	cin >> assoc;
+		if(std::cin.fail()) {
+    		std::cin.clear();
+    		std::cin.ignore(numeric_limits<streamsize>::max(),'\n');
+    		std::cout << "Invalid input.";
+    		exit(1);
+		}else if(assoc != 1 && assoc != 2 && assoc != 4){
+			throw std::invalid_argument("Associativity must be 1, 2, or 4.");
+		}
+
+    	cout << "replacement policy: ";
+    	cin >> replacement;
+		if(std::cin.fail()) {
+    		std::cin.clear();
+    		std::cin.ignore(numeric_limits<streamsize>::max(),'\n');
+    		std::cout << "Invalid input.";
+    		exit(1);
+		}else if(replacement != 1 && replacement != 2){
+			throw std::invalid_argument("Replacement policy must be 1 or 2.");
+		}
+
+    	cout << "write hit policy: ";
+    	cin >> write_hit;
+		if(std::cin.fail()) {
+    		std::cin.clear();
+    		std::cin.ignore(numeric_limits<streamsize>::max(),'\n');
+    		std::cout << "Invalid input.";
+    		exit(1);
+		}else if(write_hit != 1 && write_hit != 2){
+			throw std::invalid_argument("Write hit policy must be 1 or 2.");
+		}
+
+    	cout << "write miss policy: ";
+    	cin >> write_miss;
+		if(std::cin.fail()) {
+    		std::cin.clear();
+    		std::cin.ignore(numeric_limits<streamsize>::max(),'\n');
+    		std::cout << "Invalid input.";
+    		exit(0);
+		}else if(write_miss != 1 && write_miss != 2){
+			throw std::invalid_argument("Write miss policy must be 1 or 2.");
+		}
+	}catch(std::invalid_argument& invalid){
+		cerr << invalid.what();
+		exit(1);
+	}
+    
    
     //constructs cache with given user input
     Cache NewCache(cache_size, data_block, assoc, replacement, write_hit, write_miss, memory);
