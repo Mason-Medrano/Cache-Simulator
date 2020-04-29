@@ -14,7 +14,8 @@
 #include <iomanip> 
 #include <sstream>
 #include <fstream>
-#include <stdlib.h> 
+#include <stdlib.h>
+#include <stdexcept>
 #include <chrono>
 #include "Cache.h"
 using namespace std;
@@ -60,9 +61,23 @@ Cache::Cache(int cacheSize, int blockSize, int linesPerSet, int replacePolicyInp
 	// The number of set index bits
 	// is equal to log_2(# of sets).
 	s = log2(S);
+	
+	// Make sure that the calculation for the
+	// set-index bits processed properly.
+	if ((float)log2(S) != (float)s) {
+		throw invalid_argument("Error configuring set index bits, please check your cache configuration settings.");
+	}
+	
 	// The number of block offset bits
 	// is equal to log_2(block size).
 	b = log2(B);
+	
+	// Make sure that the calculation for the
+	// block-offset bits processed properly.
+	if ((float)log2(B) != (float)b) {
+		throw invalid_argument("Error configuring block offset bits, please check your cache configuration settings.");
+	}
+	
 	// The number of tag bits is
 	// equal to the total length of the
 	// address minus the set index and 

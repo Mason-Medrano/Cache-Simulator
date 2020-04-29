@@ -323,16 +323,22 @@ int Simulator::PromptMenu(string inputFile) {
 		return 1;
 	}
 
+	try {
+		//constructs cache with given user input
+		Cache NewCache(cache_size, data_block, assoc, replacement, write_hit, write_miss, memory);
+		cout << "cache successfully configured!" << endl;
+		Cache* cache_ptr = &NewCache;
 
-	//constructs cache with given user input
-	Cache NewCache(cache_size, data_block, assoc, replacement, write_hit, write_miss, memory);
-	cout << "cache successfully configured!" << endl;
-	Cache* cache_ptr = &NewCache;
+		//initializes simulator object with RAM and Cache
+		Simulator Sim(memory, cache_ptr);
+		// calls helper function to select commands,
+		// return 1 upon failure or 0 upon success.
+		return Sim.executeCommand();
+	}
+	catch (std::invalid_argument & invalid) {
+		cerr << invalid.what();
+		return 1;
+	}
 
-	//initializes simulator object with RAM and Cache
-	Simulator Sim(memory, cache_ptr);
-
-	// calls helper function to select commands,
-	// return 1 upon failure or 0 upon success.
-	return Sim.executeCommand();
+	return 0;
 }
