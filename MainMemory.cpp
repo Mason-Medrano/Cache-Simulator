@@ -247,16 +247,19 @@ void MainMemory::PopulateMemory(std::string memoryContentsFile)
 			}
 
 			try {
+				// Check for valid hexadecimal data.
 				if (hexData.length() > 2) {
 					throw runtime_error("Error: Input in input file is not valid hexadecimal RAM data. Please check your input file.");
 				}
 
 				string tempHex = "";
 
+				// Second check for valid hexadecimal data.
 				for (int i = 0; i < hexData.length(); ++i) {
 					tempHex = tolower(hexData.at(i));
 				}
 
+				// Second check for valid hexadecimal data.
 				for (int j = 0; j < tempHex.length(); ++j) {
 					if (!(isalpha(tempHex.at(j)) || isdigit(tempHex.at(j))) || tempHex.at(j) > 'f') {
 						throw invalid_argument("Invalid hexadecimal data: 0x" + hexData);
@@ -291,6 +294,9 @@ void MainMemory::PopulateMemory(std::string memoryContentsFile)
 			++memoryIndex;
 		}
 
+		// Check to see if the input file was empty,
+		// and throw an error if so since the RAM
+		// will not contain any inputted content.
 		if (memoryIndex == 0) {
 			cerr << "Error: Input file was empty and therefore RAM contains no data." << endl;
 			errorFlag = true;

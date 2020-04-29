@@ -504,6 +504,9 @@ void Cache::CacheWrite(string binaryAddress, string hexToStore, string hexAddres
 			// Executes if the write-miss policy is set to
 			// no-write-allocate.
 			else if (writeMissPolicy == 2) {
+				// No line will be evicted when using
+				// a no-write-allocate policy.
+				cout << "eviction_line:-1" << endl;
 				// Write the data only to RAM,
 				// do not load it into cache.
 				RAM->Write(memoryAddress, hexToStore);
@@ -523,13 +526,13 @@ void Cache::CacheWrite(string binaryAddress, string hexToStore, string hexAddres
 			int maxIndex = (set->size());
 			// Generate a random replacement index.
 			int replacementIndex = rand() % maxIndex;
-			// Denote the randomly chosen eviction
-			// line.
-			cout << "eviction_line:" << replacementIndex << endl;
-
+			
 			// Executes if the write-miss policy is
 			// set to write-allocate.
 			if (writeMissPolicy == 1) {
+				// Denote the randomly chosen eviction
+				// line.
+				cout << "eviction_line:" << replacementIndex << endl;
 				// Read the line from RAM.
 				readLine = RAM->ReadLine(adjustedMemAddress, B);
 				// Create a line to be newly inserted into
@@ -586,6 +589,9 @@ void Cache::CacheWrite(string binaryAddress, string hexToStore, string hexAddres
 			// Executes if the write-miss policy
 			// is set to no-write allocate.
 			else if (writeMissPolicy == 2) {
+				// No line will be evicted when using
+				// a no-write-allocate policy.
+				cout << "eviction_line:-1" << endl;
 				// Write directly to the RAM, ignoring
 				// the cache.
 				RAM->Write(memoryAddress, hexToStore);
@@ -619,12 +625,11 @@ void Cache::CacheWrite(string binaryAddress, string hexToStore, string hexAddres
 				}
 			}
 
-			// Denote the chosen eviction line.
-			cout << "eviction_line:" << leastIndex << endl;
-
 			// Executes if the write-miss
 			// policy is set to write-allocate.
 			if (writeMissPolicy == 1) {
+				// Denote the chosen eviction line.
+				cout << "eviction_line:" << leastIndex << endl;
 				// Read the line to write to from
 				// RAM.
 				readLine = RAM->ReadLine(adjustedMemAddress, B);
@@ -678,6 +683,9 @@ void Cache::CacheWrite(string binaryAddress, string hexToStore, string hexAddres
 			// Executes if the write-miss policy
 			// is set to no-write-allocate.
 			else if (writeMissPolicy == 2) {
+				// No line will be evicted when using
+				// a no-write-allocate policy.
+				cout << "eviction_line:-1" << endl;
 				// Write directly to the RAM, ignoring
 				// the cache.
 				RAM->Write(memoryAddress, hexToStore);

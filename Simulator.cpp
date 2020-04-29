@@ -1,3 +1,14 @@
+// File: Simulator.cpp
+// Author(s): Shane McGookey & Mason Medrano
+// Date: 04/22/2020
+// Section: CSCE 312-511 (Both)
+// E-mail: Shane_McGookey@tamu.edu & masonmedrano@tamu.edu
+// Description: This file includes the function definitions
+//              for the Simulator class. These functions allow
+//              for the construction of the simulator, the connection
+//              of the simulator to the RAM and Cache, and the user
+//              to choose various simulator options.
+
 #include <iostream>
 #include <string>
 #include <stdexcept>
@@ -34,23 +45,10 @@ Simulator::Simulator(MainMemory* inputRAM, Cache* inputCache) {
 	HexToBinary["F"] = "1111";
 }
 
-Simulator::~Simulator()
-{
-	if (RAM != NULL) {
-		delete RAM;
-	}
-	if (cache != NULL) {
-		delete cache;
-	}
-
-	RAM = NULL;
-	cache = NULL;
-}
-
 /*Helper function which allows user to select commands.
   The function then executes given command, and returns
   to while loop.*/
-void Simulator::executeCommand() {
+int Simulator::executeCommand() {
 
 	//Loops simulator menu to end only when the user types 'quit'
 	string command = "";
@@ -75,21 +73,26 @@ void Simulator::executeCommand() {
 			//Determines function to run based on user input
 			if (command == "cache-read") {
 				cin >> address;
+				// Check for a valid hexadecimal address.
 				if (address.at(0) != '0' || (address.at(1) != 'x' && address.at(1) != 'X')) {
 					throw invalid_argument("Invalid hexadecimal address: " + address);
 				}
 
 				address = address.substr(2, address.size() - 1);
 
+				// Secondary check for a valid hexadecimal address.
 				if (address.length() > 2) {
 					throw invalid_argument("Invalid hexadecimal address: 0x" + address);
 				}
 				
 				string tempAddress = "";
+
+				// Third test for a valid hexadecimal address.
 				for (int i = 0; i < address.length(); ++i) {
 					tempAddress = tolower(address.at(i));
 				}
 
+				// Third test for a valid hexadecimal address.
 				for (int i = 0; i < tempAddress.length(); ++i) {
 					if (!(isalpha(tempAddress.at(i)) || isdigit(tempAddress.at(i))) || tempAddress.at(i) > 'f') {
 						throw invalid_argument("Invalid hexadecimal address: 0x" + address);
@@ -108,25 +111,30 @@ void Simulator::executeCommand() {
 			else if (command == "cache-write") {
 				cin >> address >> data;
 
+				// Check for a valid hexadecimal address.
 				if (address.at(0) != '0' || (address.at(1) != 'x' && address.at(1) != 'X')) {
 					throw invalid_argument("Invalid hexadecimal address: " + address);
 				}
 
+				// Check for valid hexadecimal data.
 				if (data.at(0) != '0' || (data.at(1) != 'x' && data.at(1) != 'X')) {
 					throw invalid_argument("Invalid hexadecimal data: " + data);
 				}
 
 				address = address.substr(2, address.size() - 1);
 
+				// Second check for a valid hexadecimal address.
 				if (address.length() > 2) {
 					throw invalid_argument("Invalid hexadecimal address: 0x" + address);
 				}
 
 				string tempAddress = "";
+				// Third check for a valid hexadecimal address.
 				for (int i = 0; i < address.length(); ++i) {
 					tempAddress = tolower(address.at(i));
 				}
 
+				// Third check for a valid hexadecimal address.
 				for (int i = 0; i < tempAddress.length(); ++i) {
 					if (!(isalpha(tempAddress.at(i)) || isdigit(tempAddress.at(i))) || tempAddress.at(i) > 'f') {
 						throw invalid_argument("Invalid hexadecimal data: 0x" + data);
@@ -135,15 +143,19 @@ void Simulator::executeCommand() {
 
 				data = data.substr(2, data.size() - 1);
 
+				// Second check for valid hexadecimal data.
 				if (data.length() > 2) {
 					throw invalid_argument("Invalid hexadecimal data [Data is too large]: 0x" + data);
 				}
 
 				string tempData = "";
+
+				// Third check for valid hexadecimal data.
 				for (int i = 0; i < data.length(); ++i) {
 					tempData = tolower(data.at(i));
 				}
 
+				// Third check for valid hexadecimal data.
 				for (int i = 0; i < tempData.length(); ++i) {
 					if (!(isalpha(tempData.at(i)) || isdigit(tempData.at(i))) || tempData.at(i) > 'f') {
 						throw invalid_argument("Invalid hexadecimal data: 0x" + data);
@@ -179,7 +191,7 @@ void Simulator::executeCommand() {
 				RAM->MemoryDump();
 			}
 			else if (command == "quit") {
-				exit(0);
+				return 0;
 			}
 			else {
 				throw std::invalid_argument("Must select a simulator command.");
@@ -187,14 +199,14 @@ void Simulator::executeCommand() {
 		}
 		catch (std::invalid_argument & invalid) {
 			cerr << invalid.what();
-			exit(1);
+			return 1;
 		}
 	}
 }
 /*Primary function which starts the program in main.
 	  Displays initial menus and allows user to configure
 	  cache.*/
-void Simulator::PromptMenu(string inputFile) {
+int Simulator::PromptMenu(string inputFile) {
 	//constructs RAM with input file
 	cout << "*** Welcome to the cache simulator ***" << endl;
 	MainMemory RAM(inputFile);
@@ -217,8 +229,9 @@ void Simulator::PromptMenu(string inputFile) {
 			std::cin.clear();
 			std::cin.ignore(numeric_limits<streamsize>::max(), '\n');
 			std::cout << "Invalid input.";
-			exit(1);
+			return 1;
 		}
+		// Make sure that the specified cache size is within project guidelines.
 		else if (cache_size < 8 || cache_size > 256) {
 			throw std::invalid_argument("Cache size must be between 8 - 256 Bytes.");
 		}
@@ -229,11 +242,16 @@ void Simulator::PromptMenu(string inputFile) {
 			std::cin.clear();
 			std::cin.ignore(numeric_limits<streamsize>::max(), '\n');
 			std::cout << "Invalid input.";
-			exit(1);
+			return 1;
 		}
+		// Make sure that the data block size is not 0
+		// and does not exceed the size of the cache.
 		else if (data_block < 1 || data_block > cache_size) {
 			throw std::invalid_argument("Block size must be between 1 - " + to_string(cache_size) + " (total size of the cache) Bytes.");
-		} 
+		}
+		// Make sure that the data block size can
+		// divide into the cache size, if it can't
+		// there's an issue.
 		else if (cache_size % data_block != 0) {
 			throw std::invalid_argument("Total cache size must be divisible by data block size; improper configuration of cache.");
 		}
@@ -244,12 +262,16 @@ void Simulator::PromptMenu(string inputFile) {
 			std::cin.clear();
 			std::cin.ignore(numeric_limits<streamsize>::max(), '\n');
 			std::cout << "Invalid input.";
-			exit(1);
+			return 1;
 		}
+		// Make sure that E = 1 | 2 | 4
+		// as per project guidelines.
 		else if (assoc != 1 && assoc != 2 && assoc != 4) {
 			throw std::invalid_argument("Associativity must be 1, 2, or 4.");
 		}
 
+		// Make sure that the cache specifications
+		// match up.
 		if ((data_block * assoc) > cache_size) {
 			throw std::invalid_argument("Improper configuration of cache, block size or number of cache lines is too high for the specified cache size.");
 		}
@@ -260,8 +282,10 @@ void Simulator::PromptMenu(string inputFile) {
 			std::cin.clear();
 			std::cin.ignore(numeric_limits<streamsize>::max(), '\n');
 			std::cout << "Invalid input.";
-			exit(1);
+			return 1;
 		}
+		// Make sure that the cache replacement
+		// policy was set to either 1 or 2.
 		else if (replacement != 1 && replacement != 2) {
 			throw std::invalid_argument("Replacement policy must be 1 or 2.");
 		}
@@ -272,8 +296,10 @@ void Simulator::PromptMenu(string inputFile) {
 			std::cin.clear();
 			std::cin.ignore(numeric_limits<streamsize>::max(), '\n');
 			std::cout << "Invalid input.";
-			exit(1);
+			return 1;
 		}
+		// Make sure that the cache write-hit
+		// policy was set to either 1 or 2.
 		else if (write_hit != 1 && write_hit != 2) {
 			throw std::invalid_argument("Write hit policy must be 1 or 2.");
 		}
@@ -284,15 +310,17 @@ void Simulator::PromptMenu(string inputFile) {
 			std::cin.clear();
 			std::cin.ignore(numeric_limits<streamsize>::max(), '\n');
 			std::cout << "Invalid input.";
-			exit(0);
+			return 1;
 		}
+		// Make sure that the cache write-miss
+		// policy was set to either 1 or 2.
 		else if (write_miss != 1 && write_miss != 2) {
 			throw std::invalid_argument("Write miss policy must be 1 or 2.");
 		}
 	}
 	catch (std::invalid_argument & invalid) {
 		cerr << invalid.what();
-		exit(1);
+		return 1;
 	}
 
 
@@ -304,6 +332,7 @@ void Simulator::PromptMenu(string inputFile) {
 	//initializes simulator object with RAM and Cache
 	Simulator Sim(memory, cache_ptr);
 
-	//calls helper function to select commands
-	Sim.executeCommand();
+	// calls helper function to select commands,
+	// return 1 upon failure or 0 upon success.
+	return Sim.executeCommand();
 }

@@ -20,16 +20,20 @@ int main(int argc, char* argv[]) {
 	
 	// Make sure that the user has specified
 	// an input file.
-	if (argv[1] == "") {
+	if (argc == 1) {
 		cerr << "Please specify an input file." << endl;
-		exit(1);
+		return 1;
 	}
 	
 	// Prompt the simulator's menu;
 	// will start out with allowing
 	// the user to configure the
 	// cache.
-	Simulator::PromptMenu(argv[1]);
+	if (Simulator::PromptMenu(argv[1])) {
+		// Return 1 if PromptMenu returned
+		// 1 denoting an error.
+		return 1;
+	}
 
 	// Return 0 upon successful
 	// program completion.
